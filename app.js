@@ -1,28 +1,36 @@
 const express = require('express')
 const crypto = require('node:crypto')
 const moviesJSON = require('./movies.json')
+const cors = require('cors')
 const { validateMovie, validatePartialMovie } = require('./schemas/movies')
 
 const app = express()
 app.disable('x-powered-by')
 app.use(express.json())
+app.use(cors())
 
-const ACCEPTED_ORIGINS = [
-  'http://localhost:8080',
-  'http://localhost:1234',
-  'https://movies.com',
-  'https://midu.dev'
-]
+// métodos normales: GET/HEAD/POST
+// métodos complejos: PUT/PATCH/DELETE
+
+// CORS PRE-Flight
+// OPTIONS
+
+// const ACCEPTED_ORIGINS = [
+//   'http://localhost:8080',
+//   'http://localhost:1234',
+//   'https://movies.com',
+//   'https://midu.dev'
+// ]
 
 app.get('/movies', (req, res) => {
   // indicar que el recurso puede ser accedido desde cualquier sitio
   // de esta forma se evita el problema del CORS
 
-  const origin = req.header('origin')
+  // const origin = req.header('origin')
 
-  if (ACCEPTED_ORIGINS.includes(origin) || !origin) {
-    res.header('Access-Control-Allow-Origin', origin) // -> el * indica que todos los sitios pueden acceder
-  }
+  // if (ACCEPTED_ORIGINS.includes(origin) || !origin) {
+  //   res.header('Access-Control-Allow-Origin', origin) // -> el * indica que todos los sitios pueden acceder
+  // } comentado porque usamos el middleware de cors
 
   const { genre } = req.query
   if (genre) {
@@ -62,6 +70,12 @@ app.post('/movies', (req, res) => {
 })
 
 app.delete('/movies/:id', (req, res) => {
+  // const origin = req.header('origin')
+
+  //   if (ACCEPTED_ORIGINS.includes(origin) || !origin) {
+  //     res.header('Acess-Controll-Allow-Origin', origin)
+  //     res.header('Acess-Controll-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE')
+  //   }
   const { id } = req.params
   const movieIndex = moviesJSON.findIndex(movie => movie.id === id)
 
@@ -98,15 +112,16 @@ app.patch('/movies/:id', (req, res) => {
   return res.json(updatedMovie)
 })
 
-app.options('/movies/:id', (req, res) => {
-  const origin = req.header('origin')
+// app.options('/movies/:id', (req, res) => {
+//   const origin = req.header('origin')
 
-  if (ACCEPTED_ORIGINS.includes(origin) || !origin) {
-    res.header('Access-Control-Allow-Origin', origin) // -> el * indica que todos los sitios pueden acceder
-    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE')
-  }
-  res.sendStatus(200)
-})
+//   if (ACCEPTED_ORIGINS.includes(origin) || !origin) {
+//     res.header('Acess-Controll-Allow-Origin', origin)
+//     res.header('Acess-Controll-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE')
+//   }
+
+//   res.sendStatus(200)
+// })
 
 app.use((req, res) => {
   res.status(404).send('<h1>Not found</h1>')
